@@ -6,16 +6,23 @@ import datetime
 from org.gvsig.symbology.fmap.mapcontext.rendering.legend.styling import LabelingFactory
 from org.gvsig.symbology.fmap.mapcontext.rendering.legend.impl import SingleSymbolLegend
 from java.awt import Color
+from org.gvsig.symbology.swing import SymbologySwingLocator
+from org.gvsig.fmap.mapcontext import MapContextLocator
 
 def main(*args):
   proportionX = 1
   proportionY = 1
-  createBaseLayers(proportionX, proportionY)
+  xi = 0
+  yi = 0
+  baseLines = createBaseLayers(proportionX, proportionY)
   
   
   # Setting coordinates to aoristic clock
   nameFieldHour = "HORA"
   nameFieldDay = "DIA"
+  patternHour = '%H:%M:%S'
+  patternDay = '%Y-%m-%d'
+  
   layer = gvsig.currentLayer()
     
   # New points layer
@@ -28,12 +35,12 @@ def main(*args):
   store = newPoints.getFeatureStore()
   for f in set:
     fieldHour = f.get(nameFieldHour)
-    d = datetime.datetime.strptime(fieldHour, '%H:%M:%S').time()
+    d = datetime.datetime.strptime(fieldHour, patternHour).time()
     totalSecs = float(d.minute*60 + d.second)/3600
     x = float(d.hour) + float(totalSecs)
     x = x * proportionX
     fieldDay = f.get(nameFieldDay)
-    dday = datetime.datetime.strptime(fieldDay, '%Y-%m-%d')
+    dday = datetime.datetime.strptime(fieldDay, patternDay)
     y = dday.weekday()
     y = y * proportionY
     
@@ -43,7 +50,16 @@ def main(*args):
     store.insert(nf)
   newPoints.commit()
   gvsig.currentView().addLayer(newPoints)
-    
+  
+  mp = MapContextLocator.getMapContextManager()
+  leg = mp.createLegend("HeatmapLegend")
+  leg.setROI(baseLines.getFullEnvelope().getGeometry())
+  leg.setUseFixedViz(False)
+  leg.setCorrectionFixedViz(100)
+  leg.setDistance(30)
+  colorTables = SymbologySwingLocator.getSwingManager().createColorTables().get(5)
+  leg.setColorTable(colorTables.getColors())
+  newPoints.setLegend(leg)
   
 def createBaseLayers( proportionX = 1, proportionY = 1):
 
@@ -140,4 +156,5 @@ def createBaseLayers( proportionX = 1, proportionY = 1):
   
   gvsig.currentView().addLayer(basePoints)
   gvsig.currentView().addLayer(baseLines)
+  return baseLines
   

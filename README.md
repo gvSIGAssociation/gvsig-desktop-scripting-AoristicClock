@@ -1,1 +1,1 @@
-# gvsig-desktop-scripting-AoristicClock
+# gvsig-desktop-scripting-AoristicClockGrid
