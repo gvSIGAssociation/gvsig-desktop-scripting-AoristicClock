@@ -42,23 +42,14 @@ class AoristicClockGeoprocess(ToolboxProcess):
     if os.path.exists(helpPath):
         return File(helpPath)
     return None
+    
   def defineCharacteristics(self):
-    self.setName("_Aoristic_clock_name")
-    self.setGroup("_Criminology_group")
+    i18nManager = ToolsLocator.getI18nManager()
+    self.setName(i18nManager.getTranslation("_Aoristic_clock_name"))
+    self.setGroup(i18nManager.getTranslation("_Criminology_group"))
     self.setUserCanDefineAnalysisExtent(False)
     params = self.getParameters()
-    """
-    nameFieldHour = "HORA"
-    nameFieldDay = "DIA"
-    patternHour = '%H:%M:%S'
-    patternDay = '%Y-%m-%d'
-    rangeHoursParameter = "0-10"
-    rangeDaysParameter = "0,2,3-5"
-    xi = 15
-    yi = 0
-    proportion = 1
-    """
-    i18nManager = ToolsLocator.getI18nManager()
+
     params.addInputVectorLayer("LAYER",i18nManager.getTranslation("_Input_layer"), AdditionalInfoVectorLayer.SHAPE_TYPE_ANY, True)
     params.addNumericalValue("PROPORTION", i18nManager.getTranslation("_Proportion"),0, NUMERICAL_VALUE_DOUBLE)
     params.addTableField("FIELDHOUR", i18nManager.getTranslation("_Field_hour"), "LAYER", True)

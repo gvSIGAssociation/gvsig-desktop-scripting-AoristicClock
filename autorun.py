@@ -11,6 +11,7 @@ def i18nRegister():
   
 def main(*args):
   i18nRegister()
+  
   process = AoristicClockGeoprocess()
   process.selfregister("Scripting")
   process.updateToolbox()
