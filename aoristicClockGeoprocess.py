@@ -16,8 +16,32 @@ from org.gvsig.geoprocess.lib.api import GeoProcessLocator
 from addons.AoristicClock.aoristicClock import aoristicClock
 
 from org.gvsig.tools import ToolsLocator
+from org.gvsig.andami import PluginsLocator
+import os
+from java.io import File
 
 class AoristicClockGeoprocess(ToolboxProcess):
+  def getHelpFile(self):
+    name = "aoristicclock"
+    extension = ".xml"
+    locale = PluginsLocator.getLocaleManager().getCurrentLocale()
+    tag = locale.getLanguage()
+    #extension = ".properties"
+
+    helpPath = gvsig.getResource(__file__, "help", name + "_" + tag + extension)
+    if os.path.exists(helpPath):
+        return File(helpPath)
+    #Alternatives
+    alternatives = PluginsLocator.getLocaleManager().getLocaleAlternatives(locale)
+    for alt in alternatives:
+        helpPath = gvsig.getResource(__file__, "help", name + "_" + alt.toLanguageTag() + extension )
+        if os.path.exists(helpPath):
+            return File(helpPath)
+    # More Alternatives
+    helpPath = gvsig.getResource(__file__, "help", name + extension)
+    if os.path.exists(helpPath):
+        return File(helpPath)
+    return None
   def defineCharacteristics(self):
     self.setName("_Aoristic_clock_name")
     self.setGroup("_Criminology_group")
@@ -81,7 +105,7 @@ class AoristicClockGeoprocess(ToolboxProcess):
                   self)
     print "Proceso terminado %s" % self.getCommandLineName()
     return True
-        
+
 def main(*args):
         process = AoristicClockGeoprocess()
         process.selfregister("Scripting")

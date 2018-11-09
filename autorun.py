@@ -10,7 +10,7 @@ def i18nRegister():
     i18nManager.addResourceFamily("text",File(getResource(__file__,"i18n")))
   
 def main(*args):
+  i18nRegister()
   process = AoristicClockGeoprocess()
   process.selfregister("Scripting")
   process.updateToolbox()
-  i18nRegister()
