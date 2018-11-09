@@ -3,45 +3,42 @@
 import gvsig
 from gvsig import geom
 import datetime
-from org.gvsig.symbology.fmap.mapcontext.rendering.legend.styling import LabelingFactory
-from org.gvsig.symbology.fmap.mapcontext.rendering.legend.impl import SingleSymbolLegend
 from java.awt import Color
 from org.gvsig.symbology.swing import SymbologySwingLocator
 from org.gvsig.fmap.mapcontext import MapContextLocator
 from org.gvsig.tools import ToolsLocator
 import datetime
 import sys
-
-def main(*args):
-  proportionX = 1
-  proportionY = 1
-  nameFieldHour = "HORA"
-  nameFieldDay = "DIA"
-  patternHour = '%H:%M:%S'
-  patternDay = '%Y-%m-%d'
-  xi = 0
-  yi = 0
-  #store = gvsig.currentView().getLayer("20f").getFeatureStore()
-  store = gvsig.currentLayer().getFeatureStore()
-  aoristicClock(store,
-                      proportionX,
-                      proportionY,
-                      nameFieldHour,
-                      nameFieldDay,
-                      patternHour,
-                      patternDay,
-                      0,
-                      0)
-  
-
-
-
 from gvsig.geom import *
 import math
 from java.awt import Color
 from org.gvsig.symbology.fmap.mapcontext.rendering.legend.impl import VectorialIntervalLegend, SingleSymbolLegend
 from org.gvsig.symbology.fmap.mapcontext.rendering.legend.styling import LabelingFactory
 import pdb
+
+def main(*args):
+  nameFieldHour = "HORA"
+  nameFieldDay = "DIA"
+  patternHour = '%H:%M:%S'
+  patternDay = '%Y-%m-%d'
+  rangeHoursParameter = "0-10"
+  rangeDaysParameter = "0,2,3-5"
+  xi = -15
+  yi = 0
+  proportion = 1
+  #store = gvsig.currentView().getLayer("20f").getFeatureStore()
+  store = gvsig.currentLayer().getFeatureStore()
+  aoristicClock(store,
+                nameFieldHour,
+                nameFieldDay,
+                patternHour,
+                patternDay,
+                rangeHoursParameter,
+                rangeDaysParameter,
+                xi,
+                yi,
+                proportion)
+
 # math.radians(x)
 to_radian = lambda degree: math.pi / 180.0 * degree
 # math.degrees(x)
@@ -84,7 +81,7 @@ def create_ring_cell(centroid, from_deg, to_deg, from_radius, to_radius, default
     
                 
 def getRingInitVertex(ring, centroid, r, rk, deg, factorReduction):
-  radius = r + 0.5 #(rk/2)#(rk/factorReduction)# + (rk/2)
+  radius = r + 0.5*factorReduction #(rk/2)#(rk/factorReduction)# + (rk/2)
   radian = to_radian(deg)
   point = create_point(centroid, radian, radius)
   return point
@@ -104,46 +101,106 @@ def getRadiusFromEnvelope(envelope):
   radius = (((maxx - minx)**2 + (maxy - miny)**2) **0.5) / 2.0
   return radius
 
+def processRangeHoursParameter(rangesTextParameter):
+  #"0-3,5-7"
+  ranges = rangesTextParameter.split(",")
+  all = []
+  for rs in ranges:
+    r = rs.split("-")
+    if len(r)!=1:
+      i=int(r[0])
+      f=int(r[1])+1
+      if i < 0:
+        i=0
+      if f>24:
+        f=24
+      for v in range(i,f):
+        all.append(v)
+    else:
+      v=int(r[0])
+      if 0 <= v <= 24:
+        all.append(v)
+  return all
+  
+def processRangeDaysParameter(rangesTextParameter):
+  #"0-3,5-7"
+  ranges = rangesTextParameter.split(",")
+  all = []
+  for rs in ranges:
+    r = rs.split("-")
+    if len(r)!=1:
+      i=int(r[0])
+      f=int(r[1])+1
+      if i < 0:
+        i=0
+      if f>7:
+        f=7
+      for v in range(i,f):
+        all.append(v)
+    else:
+      v=int(r[0])
+      if 0 <= v <= 6:
+        all.append(v)
+  return all
+  
 def aoristicClock(store,
-                      proportionX,
-                      proportionY,
                       nameFieldHour,
                       nameFieldDay,
                       patternHour,
                       patternDay,
+                      rangeHoursParameter,
+                      rangeDaysParameter,
                       xi=0,
                       yi=0,
+                      proportion=1,
                       selfStatus=None):
-  print "AoristicClock func"
-  centroid = geom.createPoint(geom.D2, 0, 0)
+  
+  i18nManager = ToolsLocator.getI18nManager()
+  
+  centroid = geom.createPoint(geom.D2, xi, yi)
   # 24 sectores
   # 7 ciruclos
   #hours = 24
   #days = 7
-  
-  rangeHours = [0,3] #1,2,3,6,7,10,11,22,23] #,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
-  rangeDays = [0,1,2,6] #,4,5,6]
+  if rangeHoursParameter == "":
+      rangeHoursParameter = "0-23"
+      
+  if rangeDaysParameter == "":
+      rangeDaysParameter = "0-6"
+      
+  try:
+    rangeHours = processRangeHoursParameter(rangeHoursParameter)
+  except:
+    rangeHours = processRangeHoursParameter("0-23")
+    print "error h"
+
+  try:
+    rangeDays = processRangeDaysParameter(rangeDaysParameter)
+  except:
+    rangeDays = processRangeDaysParameter("0-6")
+    print "error d"
+  #rangeDays = [0,1,2,6] #,4,5,6]
   days = len(rangeDays) #rangeDays[1] - rangeDays[0]
   hours = len(rangeHours) #rangeHours[1] - rangeHours[0]
   
-  internalRadius = 1
+  internalRadius = 1*proportion
   half_step = 90
   default_segs = 15
   separationGaps = 1
   centerTopSector = False
-  radiusInterval = 1
+  radiusInterval = 1*proportion
   iLabel = True
   createSectorLabel=True
   labelOnlyFirstSector = True
-  dayNames = {
-      0:"_Monday",
-      1:"_Tuesday",
-      2:"_Wednesday",
-      3:"_Thursday",
-      4:"_Friday",
-      5:"_Satuday",
-      6:"_Sunday"
-      }
+  dayNames = {0:i18nManager.getTranslation("_Monday"),
+          1:i18nManager.getTranslation("_Tuesday"),
+          2:i18nManager.getTranslation("_Wednesday"),
+          3:i18nManager.getTranslation("_Thursday"),
+          4:i18nManager.getTranslation("_Friday"),
+          5:i18nManager.getTranslation("_Saturday"),
+          6:i18nManager.getTranslation("_Sunday")
+          }
+
   # Prepare schema
   newSchema = gvsig.createFeatureType()
   newSchema.append("LABEL", "STRING", 20)
@@ -180,19 +237,25 @@ def aoristicClock(store,
     radius = internalRadius
   # Prepare radiusInterval
   if radiusInterval > 0:
-      radius_interval = radiusInterval
+      radius_interval = radiusInterval 
   else:
-      radius_interval = radius / ring_num
+      radius_interval = (radius / ring_num)*proportion
   last = None
   gaps = 0
+  if selfStatus!=None: selfStatus.setRangeOfValues(0,len(rangeHours))
+  processText = i18nManager.getTranslation("_Processing")
   for position in range(0, len(rangeHours)): #xrange(0, hours):
+    if selfStatus!=None: 
+      selfStatus.setProgressText(processText + ": " + str(position)+" / "+str(int(len(rangeHours))))
+      if selfStatus.isCanceled() == True:
+        ringShape.finishEditing()
+        return True
     i = rangeHours[position]
     if len(rangeHours)==(position+1):
       rangePosition = 0
     else:
       rangePosition = position+1
     if i != (rangeHours[rangePosition]-1):
-      print i, rangeHours[rangePosition]
       if i==23 and rangeHours[rangePosition]==0:
         gaps = 0
       else:
@@ -205,8 +268,8 @@ def aoristicClock(store,
     from_deg = half_step - (idx_side * step_angle) - correction_from_deg
     to_deg = half_step - ((idx_side + 1) * step_angle) + correction_to_deg
     # Get closest
-    rin = radius+(radius_interval*(1))
-    rout = radius
+    rin = (radius+(radius_interval*(1)))*proportion
+    rout = radius*proportion
     rin, rout
     prering = create_ring_cell(centroid, from_deg, to_deg, rin, rout, default_segs).centroid()
 
@@ -228,7 +291,7 @@ def aoristicClock(store,
       new.set("GEOMETRY", ring)
       ringStore.insert(new)
       if iLabel==True and labelOnlyFirstSector==True:
-        pointLocation = getRingInitVertex(ring,centroid, rout,radius_interval, from_deg, 1)
+        pointLocation = getRingInitVertex(ring,centroid, rout,radius_interval, from_deg, proportion)
         newFeaturePoint = pointStore.createNewFeature()
         newFeaturePoint.set("LABEL", day)
         #newFeaturePoint.set("VALUE", feature.get(fields[iring]))
@@ -240,7 +303,7 @@ def aoristicClock(store,
         pointStore.insert(newFeaturePoint)
         
     if createSectorLabel==True:
-      pointLocation = getRingInitVertex(ring,centroid, rout+radius_interval,radius_interval, from_deg, 5)
+      pointLocation = getRingInitVertex(ring,centroid, rout+radius_interval,radius_interval, from_deg, proportion)
       newFeaturePoint = pointStore.createNewFeature()
       newFeaturePoint.set("LABEL", i)
       newFeaturePoint.set("VALUE", 0)
@@ -250,17 +313,17 @@ def aoristicClock(store,
       #newFeaturePoint.set("DAY", iring)
       newFeaturePoint.set("GEOMETRY", pointLocation)
       pointStore.insert(newFeaturePoint)
-      if gaps>0:
-        pointLocation = getRingInitVertex(ring,centroid, rout+radius_interval,radius_interval, to_deg+(1.5*correction_to_deg), 1)
-        newFeaturePoint = pointStore.createNewFeature()
-        newFeaturePoint.set("LABEL", i)
-        newFeaturePoint.set("VALUE", 0)
-        newFeaturePoint.set("STRVALUE", " "+str(i+1)+":00")
-        newFeaturePoint.set("ROTATION", (to_deg+(1.5*correction_to_deg)) -90)
-        newFeaturePoint.set("HOUR", i)
-        #newFeaturePoint.set("DAY", iring)
-        newFeaturePoint.set("GEOMETRY", pointLocation)
-        pointStore.insert(newFeaturePoint)
+      #if gaps>0: #create anotation end of gaps time
+      #  pointLocation = getRingInitVertex(ring,centroid, rout+radius_interval,radius_interval, to_deg+(1.5*correction_to_deg), 1)
+      #  newFeaturePoint = pointStore.createNewFeature()
+      #  newFeaturePoint.set("LABEL", i)
+      #  newFeaturePoint.set("VALUE", 0)
+      #  newFeaturePoint.set("STRVALUE", " "+str(i+1)+":00")
+      #  newFeaturePoint.set("ROTATION", (to_deg+(1.5*correction_to_deg))-90)
+      #  newFeaturePoint.set("HOUR", i)
+      #  #newFeaturePoint.set("DAY", iring)
+      #  newFeaturePoint.set("GEOMETRY", pointLocation)
+      #  pointStore.insert(newFeaturePoint)
     if labelOnlyFirstSector:
       labelOnlyFirstSector = False
     idx_side  += 1
@@ -321,41 +384,26 @@ def aoristicClock(store,
     ringShape.setLegend(vil)
   except:
     pass
+  
   ds = LabelingFactory().createDefaultStrategy(pointShape)
   ds.setTextField("STRVALUE")
   ds.setRotationField("ROTATION")
   ds.setFixedSize(20)
   pointShape.setLabelingStrategy(ds)
   pointShape.setIsLabeled(True)
-  print "DONE"
+  
+  leg = SingleSymbolLegend()
+  leg.setShapeType(geom.POINT)
+  manager = leg.getSymbolManager()
+  pointSymbol = manager.createSymbol(geom.POINT)
+  pointSymbol.setColor(Color.black)
+  pointSymbol.setSize(0)
+  leg.setDefaultSymbol(pointSymbol)
+  pointShape.setLegend(leg)
+  return True
     
 def main1(*args):
-  # Inputs
-  idStore = "refman"
-  idTable = "refman"
-  fields = ["pob_0_14", "pob_15_65", "pob_66_mas"]
-  #fields = ["Campo1", "Campo2"] #, "Campo3"]
-  #fields = ["Campo1"]
-  #layerName = "ejemplo_puntos"
-  layerName = "pob_5fs"
-  #layerName = "fewlines"
-  store = gvsig.currentView().getLayer(layerName).getFeatureStore()
-  table = gvsig.currentView().getLayer(layerName).getFeatureStore()
-  #store = gvsig.currentLayer().getFeatureStore()
-  #table = gvsig.currentLayer().getFeatureStore()
-  default_segs = 15
-  gaps = 1
-  half_step = 90
-  internalRadius = 0
-  radiusInterval = 0
-  centerTopSector = True
-  iLabel = True
-  labelOnlyFirstSector = False
-  createSectorLabel = True
-  createRingMap(store, table, idStore, idTable, fields, default_segs, gaps, half_step, internalRadius, radiusInterval, centerTopSector,iLabel, labelOnlyFirstSector, createSectorLabel)
-
-
-
+  print processRangeDaysParameter("0,2,3,6,9")
 
 
 

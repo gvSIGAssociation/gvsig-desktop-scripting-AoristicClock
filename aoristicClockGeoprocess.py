@@ -13,55 +13,76 @@ from org.gvsig.geoprocess.lib.api import GeoProcessLocator
 
 
 
-from addons.AoristicClockGrid.aoristicClockGrid import aoristicClockGrid
+from addons.AoristicClock.aoristicClock import aoristicClock
 
 from org.gvsig.tools import ToolsLocator
 
-class AoristicClockGridGeoprocess(ToolboxProcess):
+class AoristicClockGeoprocess(ToolboxProcess):
   def defineCharacteristics(self):
-    self.setName("_Aoristic_clock_grid_name")
+    self.setName("_Aoristic_clock_name")
     self.setGroup("_Criminology_group")
     self.setUserCanDefineAnalysisExtent(False)
     params = self.getParameters()
+    """
+    nameFieldHour = "HORA"
+    nameFieldDay = "DIA"
+    patternHour = '%H:%M:%S'
+    patternDay = '%Y-%m-%d'
+    rangeHoursParameter = "0-10"
+    rangeDaysParameter = "0,2,3-5"
+    xi = 15
+    yi = 0
+    proportion = 1
+    """
     i18nManager = ToolsLocator.getI18nManager()
     params.addInputVectorLayer("LAYER",i18nManager.getTranslation("_Input_layer"), AdditionalInfoVectorLayer.SHAPE_TYPE_ANY, True)
-    params.addNumericalValue("PROPORTIONX", i18nManager.getTranslation("_Proportion_X"),0, NUMERICAL_VALUE_DOUBLE)
-    params.addNumericalValue("PROPORTIONY", i18nManager.getTranslation("_Proportion_Y"),0, NUMERICAL_VALUE_DOUBLE)
+    params.addNumericalValue("PROPORTION", i18nManager.getTranslation("_Proportion"),0, NUMERICAL_VALUE_DOUBLE)
     params.addTableField("FIELDHOUR", i18nManager.getTranslation("_Field_hour"), "LAYER", True)
     params.addSelection("PATTERNHOUR", i18nManager.getTranslation("_Pattern_hour"),['%H:%M:%S'])
     
     params.addTableField("FIELDDAY", i18nManager.getTranslation("_Field_day"), "LAYER", True)
     params.addSelection("PATTERNDAY", i18nManager.getTranslation("_Pattern_day"),['%Y-%m-%d'])
     
+    params.addString("RANGEHOURS",i18nManager.getTranslation("_Range_hours"))
+    params.addString("RANGEDAYS",i18nManager.getTranslation("_Range_days"))
+    
+    params.addNumericalValue("INITIAL_X", i18nManager.getTranslation("_Initial_Point_X"),0, NUMERICAL_VALUE_DOUBLE)
+    params.addNumericalValue("INITIAL_Y", i18nManager.getTranslation("_Initial_Point_Y"),0, NUMERICAL_VALUE_DOUBLE)
+    
+    
   def processAlgorithm(self):
-        features=None
-        params = self.getParameters()
-        sextantelayer = params.getParameterValueAsVectorLayer("LAYER")
-        proportionX = params.getParameterValueAsDouble("PROPORTIONX")
-        proportionY = params.getParameterValueAsDouble("PROPORTIONY")
-        
-        nameFieldHour = params.getParameterValueAsInt("FIELDHOUR")
-        nameFieldDay =  params.getParameterValueAsInt("FIELDDAY")
-        
-        patternHour = params.getParameterValueAsString("PATTERNHOUR")
-        patternDay =  params.getParameterValueAsString("PATTERNDAY")
-        
-        store = sextantelayer.getFeatureStore()
+    features=None
+    params = self.getParameters()
+    sextantelayer = params.getParameterValueAsVectorLayer("LAYER")
+    proportion = params.getParameterValueAsDouble("PROPORTION")
+    nameFieldHour = params.getParameterValueAsInt("FIELDHOUR")
+    nameFieldDay =  params.getParameterValueAsInt("FIELDDAY")
+    
+    patternHour = params.getParameterValueAsString("PATTERNHOUR")
+    patternDay =  params.getParameterValueAsString("PATTERNDAY")
+    
+    rangeHoursParameter = params.getParameterValueAsString("RANGEHOURS")
+    rangeDaysParameter = params.getParameterValueAsString("RANGEDAYS")
+    
+    xi = params.getParameterValueAsDouble("INITIAL_X")
+    yi = params.getParameterValueAsDouble("INITIAL_Y")
+    store = sextantelayer.getFeatureStore()
 
-        aoristicClockGrid(store,
-                      proportionX,
-                      proportionY,
-                      nameFieldHour,
-                      nameFieldDay,
-                      patternHour,
-                      patternDay,
-                      0,
-                      0,
-                      self)
-        print "Proceso terminado %s" % self.getCommandLineName()
-        return True
+    aoristicClock(store,
+                  nameFieldHour,
+                  nameFieldDay,
+                  patternHour,
+                  patternDay,
+                  rangeHoursParameter,
+                  rangeDaysParameter,
+                  xi,
+                  yi,
+                  proportion,
+                  self)
+    print "Proceso terminado %s" % self.getCommandLineName()
+    return True
         
 def main(*args):
-        process = AoristicClockGridGeoprocess()
+        process = AoristicClockGeoprocess()
         process.selfregister("Scripting")
         process.updateToolbox()
