@@ -15,15 +15,22 @@ from java.awt import Color
 from org.gvsig.symbology.fmap.mapcontext.rendering.legend.impl import VectorialIntervalLegend, SingleSymbolLegend
 from org.gvsig.symbology.fmap.mapcontext.rendering.legend.styling import LabelingFactory
 import pdb
+from java.util import Date
+from java.util import Calendar
+from java.text import SimpleDateFormat
+from org.gvsig.expressionevaluator import ExpressionEvaluatorLocator
 
 def main(*args):
-  nameFieldHour = "HORA"
-  nameFieldDay = "DIA"
-  patternHour = '%H:%M:%S'
-  patternDay = '%Y-%m-%d'
-  rangeHoursParameter = "0-10"
-  rangeDaysParameter = "0,2,3-5"
-  xi = -15
+  nameFieldHour = "CMPLNT_F_1"
+  nameFieldDay = "CMPLNT_FR_"
+  # Transformar de antemano a fecha
+  patternHour = 'HH:mm:ss'
+  patternDay = 'yyyy-MM-dd'
+  rangeHoursParameter = "0-10,13"
+  rangeDaysParameter = "0, 3-6,7"
+  expression = ''
+  expression = "OFNS_DESC = 'BURGLARY'"
+  xi = 0
   yi = 0
   proportion = 1
   #store = gvsig.currentView().getLayer("20f").getFeatureStore()
@@ -35,6 +42,7 @@ def main(*args):
                 patternDay,
                 rangeHoursParameter,
                 rangeDaysParameter,
+                expression,
                 xi,
                 yi,
                 proportion)
@@ -141,27 +149,36 @@ def processRangeDaysParameter(rangesTextParameter):
       v=int(r[0])
       if 0 <= v <= 6:
         all.append(v)
-  return all
+  correction = []
+  interChange = {0:Calendar.MONDAY,
+          1:Calendar.TUESDAY,
+          2:Calendar.WEDNESDAY,
+          3:Calendar.THURSDAY,
+          4:Calendar.FRIDAY,
+          5:Calendar.SATURDAY,
+          6:Calendar.SUNDAY
+          }
+  for i in all:
+    correction.append(interChange[i])
+  return correction
   
 def aoristicClock(store,
-                      nameFieldHour,
-                      nameFieldDay,
-                      patternHour,
-                      patternDay,
-                      rangeHoursParameter,
-                      rangeDaysParameter,
-                      xi=0,
-                      yi=0,
-                      proportion=1,
-                      selfStatus=None):
+                  nameFieldHour,
+                  nameFieldDay,
+                  patternHour,
+                  patternDay,
+                  rangeHoursParameter,
+                  rangeDaysParameter,
+                  expression,
+                  xi=0,
+                  yi=0,
+                  proportion=1,
+                  selfStatus=None):
   
   i18nManager = ToolsLocator.getI18nManager()
   
   centroid = geom.createPoint(geom.D2, xi, yi)
-  # 24 sectores
-  # 7 ciruclos
-  #hours = 24
-  #days = 7
+
   if rangeHoursParameter == "":
       rangeHoursParameter = "0-23"
       
@@ -172,17 +189,18 @@ def aoristicClock(store,
     rangeHours = processRangeHoursParameter(rangeHoursParameter)
   except:
     rangeHours = processRangeHoursParameter("0-23")
-    print "error h"
+    print "*****+ error h"
 
   try:
     rangeDays = processRangeDaysParameter(rangeDaysParameter)
   except:
     rangeDays = processRangeDaysParameter("0-6")
-    print "error d"
-  #rangeDays = [0,1,2,6] #,4,5,6]
-  days = len(rangeDays) #rangeDays[1] - rangeDays[0]
-  hours = len(rangeHours) #rangeHours[1] - rangeHours[0]
-  
+    print "****** error d"
+    return
+
+  days = len(rangeDays)
+  hours = len(rangeHours)
+
   internalRadius = 1*proportion
   half_step = 90
   default_segs = 15
@@ -192,13 +210,22 @@ def aoristicClock(store,
   iLabel = True
   createSectorLabel=True
   labelOnlyFirstSector = True
-  dayNames = {0:i18nManager.getTranslation("_Monday"),
-          1:i18nManager.getTranslation("_Tuesday"),
-          2:i18nManager.getTranslation("_Wednesday"),
-          3:i18nManager.getTranslation("_Thursday"),
-          4:i18nManager.getTranslation("_Friday"),
-          5:i18nManager.getTranslation("_Saturday"),
-          6:i18nManager.getTranslation("_Sunday")
+  dayOrderRange = [ Calendar.MONDAY,
+          Calendar.TUESDAY,
+          Calendar.WEDNESDAY,
+          Calendar.THURSDAY,
+          Calendar.FRIDAY,
+          Calendar.SATURDAY,
+          Calendar.SUNDAY
+          ]
+  
+  dayNames = {Calendar.MONDAY:i18nManager.getTranslation("_Monday"),
+          Calendar.TUESDAY:i18nManager.getTranslation("_Tuesday"),
+          Calendar.WEDNESDAY:i18nManager.getTranslation("_Wednesday"),
+          Calendar.THURSDAY:i18nManager.getTranslation("_Thursday"),
+          Calendar.FRIDAY:i18nManager.getTranslation("_Friday"),
+          Calendar.SATURDAY:i18nManager.getTranslation("_Saturday"),
+          Calendar.SUNDAY:i18nManager.getTranslation("_Sunday")
           }
 
   # Prepare schema
@@ -267,14 +294,14 @@ def aoristicClock(store,
   
     from_deg = half_step - (idx_side * step_angle) - correction_from_deg
     to_deg = half_step - ((idx_side + 1) * step_angle) + correction_to_deg
-    # Get closest
+    
     rin = (radius+(radius_interval*(1)))*proportion
     rout = radius*proportion
     rin, rout
     prering = create_ring_cell(centroid, from_deg, to_deg, rin, rout, default_segs).centroid()
 
-    for iring in range(0, len(rangeDays)): #xrange(0, days):
-      day = rangeDays[iring]
+    for iring, day in enumerate(rangeDays, 1): #range(0, dayOrderRange)
+      #day = rangeDays[iring]
       new = ringStore.createNewFeature()
       rin = radius+(radius_interval*(iring+1))
       rout = radius+(radius_interval*iring)
@@ -329,30 +356,51 @@ def aoristicClock(store,
     idx_side  += 1
   ringShape.commit()
 
-
-  # Get values
-  fset = store.getFeatureSet()
-  # init dict
+  ###
+  ### GET VALUES
+  ###
+  if expression != '':
+    expressionEvaluatorManager = ExpressionEvaluatorLocator.getManager()
+    try:
+      evaluator = expressionEvaluatorManager.createEvaluator(expression)
+      fq = store.createFeatureQuery()
+      fq.addFilter(evaluator)
+      fset = store.getFeatureSet(fq)
+    except:
+      fset = store.getFeatureSet()
+  else:
+    fset = store.getFeatureSet()
+ 
+  ###
+  ### INIT DICT 
+  ###
+  
   dictValues = {}
-  for d in rangeDays:
+  for d in dayOrderRange:
     dictHour={}
-    for h in rangeHours:
+    for h in range(0,24):
       dictHour[h] = 0
     dictValues[d] = dictHour
-  
-  for f in fset:
-    fieldHour = f.get(nameFieldHour)
-    fieldDay = f.get(nameFieldDay)
-    d = datetime.datetime.strptime(fieldHour, patternHour).time()
-    hour = d.hour
-    dday = datetime.datetime.strptime(fieldDay, patternDay)
-    day = dday.weekday()
-    try:
-      dictValues[day][hour] += 1
-    except:
-      pass
 
-  # Fill values
+  ###
+  ### FILL DICT
+  ###
+  for f in fset:
+    dateFieldHour = getFieldAsDate(f.get(nameFieldHour), patternHour)
+    dateFieldDay = getFieldAsDate(f.get(nameFieldDay), patternDay)
+    
+    if isinstance(dateFieldDay, Date) and isinstance(dateFieldHour, Date):
+      cal = Calendar.getInstance()
+      cal.setTime(dateFieldDay)
+      day = cal.get(Calendar.DAY_OF_WEEK)
+      cal = Calendar.getInstance()
+      cal.setTime(dateFieldHour)
+      hour = cal.get(Calendar.HOUR_OF_DAY)
+      dictValues[day][hour] += 1
+  
+  ###
+  ### FILL SHAPE WITH VALUES
+  ###
   ringShape.edit()
   store = ringShape.getFeatureStore()
   fset = store.getFeatureSet()
@@ -362,16 +410,20 @@ def aoristicClock(store,
     d = f.get("DAY")
     e.set("VALUE", dictValues[d][h])
     fset.update(e)
-
-  # Commits
+  
+  ###
+  ### FINISH
+  ###
   ringShape.commit()
   ringShape.setName("Ao-Clock")
   pointShape.commit()
   pointShape.setName("Ao-Label")
   gvsig.currentView().addLayer(ringShape)
   gvsig.currentView().addLayer(pointShape)
-  
-  # Legend
+
+  ###
+  ### LEGEND AND LABELS
+  ###
   try:
     vil = VectorialIntervalLegend(POLYGON)
     vil.setStartColor(Color.green)
@@ -406,6 +458,14 @@ def main1(*args):
   print processRangeDaysParameter("0,2,3,6,9")
 
 
-
+def getFieldAsDate(field, pattern):
+    if isinstance(field, unicode):
+      formatter = SimpleDateFormat(pattern)
+      newDate = formatter.parse(field)
+      return newDate
+    elif isinstance(field, Date):
+      return field
+    else:
+      return None
 
   

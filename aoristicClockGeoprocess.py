@@ -1,4 +1,7 @@
 # encoding: utf-8
+from gvsig.uselib import use_plugin
+use_plugin("org.gvsig.toolbox")
+use_plugin("org.gvsig.geoprocess.app.mainplugin")
 
 import gvsig
 import pdb
@@ -53,14 +56,14 @@ class AoristicClockGeoprocess(ToolboxProcess):
     params.addInputVectorLayer("LAYER",i18nManager.getTranslation("_Input_layer"), AdditionalInfoVectorLayer.SHAPE_TYPE_ANY, True)
     params.addNumericalValue("PROPORTION", i18nManager.getTranslation("_Proportion"),0, NUMERICAL_VALUE_DOUBLE)
     params.addTableField("FIELDHOUR", i18nManager.getTranslation("_Field_hour"), "LAYER", True)
-    params.addSelection("PATTERNHOUR", i18nManager.getTranslation("_Pattern_hour"),['%H:%M:%S'])
-    
+    #params.addSelection("PATTERNHOUR", i18nManager.getTranslation("_Pattern_hour"),['%H:%M:%S'])
+    params.addString("PATTERNHOUR", i18nManager.getTranslation("_Pattern_hour"))
     params.addTableField("FIELDDAY", i18nManager.getTranslation("_Field_day"), "LAYER", True)
-    params.addSelection("PATTERNDAY", i18nManager.getTranslation("_Pattern_day"),['%Y-%m-%d'])
-    
+    #params.addSelection("PATTERNDAY", i18nManager.getTranslation("_Pattern_day"),['%Y-%m-%d'])
+    params.addString("PATTERNDAY", i18nManager.getTranslation("_Pattern_day"))
     params.addString("RANGEHOURS",i18nManager.getTranslation("_Range_hours"))
     params.addString("RANGEDAYS",i18nManager.getTranslation("_Range_days"))
-    
+    params.addString("FILTEREXPRESSION",i18nManager.getTranslation("_Filter_expression"))
     params.addNumericalValue("INITIAL_X", i18nManager.getTranslation("_Initial_Point_X"),0, NUMERICAL_VALUE_DOUBLE)
     params.addNumericalValue("INITIAL_Y", i18nManager.getTranslation("_Initial_Point_Y"),0, NUMERICAL_VALUE_DOUBLE)
     
@@ -78,7 +81,7 @@ class AoristicClockGeoprocess(ToolboxProcess):
     
     rangeHoursParameter = params.getParameterValueAsString("RANGEHOURS")
     rangeDaysParameter = params.getParameterValueAsString("RANGEDAYS")
-    
+    expression = params.getParameterValueAsString("FILTEREXPRESSION")
     xi = params.getParameterValueAsDouble("INITIAL_X")
     yi = params.getParameterValueAsDouble("INITIAL_Y")
     store = sextantelayer.getFeatureStore()
@@ -90,6 +93,7 @@ class AoristicClockGeoprocess(ToolboxProcess):
                   patternDay,
                   rangeHoursParameter,
                   rangeDaysParameter,
+                  expression,
                   xi,
                   yi,
                   proportion,
