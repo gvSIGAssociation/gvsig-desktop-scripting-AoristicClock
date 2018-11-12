@@ -359,7 +359,9 @@ def aoristicClock(store,
   ###
   ### GET VALUES
   ###
-  if expression != '':
+  if store.getSelection().getSize()!=0:
+    fset = store.getSelection()
+  elif expression != '':
     expressionEvaluatorManager = ExpressionEvaluatorLocator.getManager()
     try:
       evaluator = expressionEvaluatorManager.createEvaluator(expression)
