@@ -57,40 +57,40 @@ class AoristicClockGeoprocess(ToolboxProcess):
     params.addNumericalValue("PROPORTION", i18nManager.getTranslation("_Proportion"),0, NUMERICAL_VALUE_DOUBLE)
     params.addTableField("FIELDHOUR", i18nManager.getTranslation("_Field_hour"), "LAYER", True)
     #params.addSelection("PATTERNHOUR", i18nManager.getTranslation("_Pattern_hour"),['%H:%M:%S'])
-    params.addString("PATTERNHOUR", i18nManager.getTranslation("_Pattern_hour"))
+    #params.addString("PATTERNHOUR", i18nManager.getTranslation("_Pattern_hour"))
     params.addTableField("FIELDDAY", i18nManager.getTranslation("_Field_day"), "LAYER", True)
     #params.addSelection("PATTERNDAY", i18nManager.getTranslation("_Pattern_day"),['%Y-%m-%d'])
-    params.addString("PATTERNDAY", i18nManager.getTranslation("_Pattern_day"))
+    #params.addString("PATTERNDAY", i18nManager.getTranslation("_Pattern_day"))
     params.addString("RANGEHOURS",i18nManager.getTranslation("_Range_hours"))
     params.addString("RANGEDAYS",i18nManager.getTranslation("_Range_days"))
-    params.addString("FILTEREXPRESSION",i18nManager.getTranslation("_Filter_expression"))
-    params.addNumericalValue("INITIAL_X", i18nManager.getTranslation("_Initial_Point_X"),0, NUMERICAL_VALUE_DOUBLE)
-    params.addNumericalValue("INITIAL_Y", i18nManager.getTranslation("_Initial_Point_Y"),0, NUMERICAL_VALUE_DOUBLE)
-    
+    params.addTableFilter("FILTEREXPRESSION",i18nManager.getTranslation("_Filter_expression"),"LAYER", True)
+    #params.addNumericalValue("INITIAL_X", i18nManager.getTranslation("_Initial_Point_X"),0, NUMERICAL_VALUE_DOUBLE)
+    #params.addNumericalValue("INITIAL_Y", i18nManager.getTranslation("_Initial_Point_Y"),0, NUMERICAL_VALUE_DOUBLE)
+    params.addPoint("INITIAL_POINT", i18nManager.getTranslation("_Initial_Point"))
     
   def processAlgorithm(self):
     features=None
     params = self.getParameters()
     sextantelayer = params.getParameterValueAsVectorLayer("LAYER")
     proportion = params.getParameterValueAsDouble("PROPORTION")
-    nameFieldHour = params.getParameterValueAsInt("FIELDHOUR")
-    nameFieldDay =  params.getParameterValueAsInt("FIELDDAY")
+    nameFieldHour = params.getParameterValueAsString("FIELDHOUR")
+    nameFieldDay =  params.getParameterValueAsString("FIELDDAY")
     
-    patternHour = params.getParameterValueAsString("PATTERNHOUR")
-    patternDay =  params.getParameterValueAsString("PATTERNDAY")
+    #patternHour = params.getParameterValueAsString("PATTERNHOUR")
+    #patternDay =  params.getParameterValueAsString("PATTERNDAY")
     
     rangeHoursParameter = params.getParameterValueAsString("RANGEHOURS")
     rangeDaysParameter = params.getParameterValueAsString("RANGEDAYS")
-    expression = params.getParameterValueAsString("FILTEREXPRESSION")
-    xi = params.getParameterValueAsDouble("INITIAL_X")
-    yi = params.getParameterValueAsDouble("INITIAL_Y")
+    expression = params.getParameterValueAsObject("FILTEREXPRESSION")
+
+    point = params.getParameterValueAsObject("INITIAL_POINT")
+    xi = point.getX()
+    yi = point.getY()
     store = sextantelayer.getFeatureStore()
 
     aoristicClock(store,
                   nameFieldHour,
                   nameFieldDay,
-                  patternHour,
-                  patternDay,
                   rangeHoursParameter,
                   rangeDaysParameter,
                   expression,
@@ -98,7 +98,7 @@ class AoristicClockGeoprocess(ToolboxProcess):
                   yi,
                   proportion,
                   self)
-    print "Proceso terminado %s" % self.getCommandLineName()
+
     return True
 
 def main(*args):

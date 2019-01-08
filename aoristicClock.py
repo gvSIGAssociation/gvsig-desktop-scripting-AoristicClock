@@ -19,8 +19,14 @@ from java.util import Date
 from java.util import Calendar
 from java.text import SimpleDateFormat
 from org.gvsig.expressionevaluator import ExpressionEvaluatorLocator
-
+from org.gvsig.fmap.dal import DALLocator
 def main(*args):
+  ###
+  ### INFO
+  ###
+  # DATA HAS FIELD NAMED CMPLNT_F_1 with HH:mm:ss format
+  # CONVERT FIELD TO DATE
+  
   nameFieldHour = "CMPLNT_F_1"
   nameFieldDay = "CMPLNT_FR_"
   # Transformar de antemano a fecha
@@ -165,8 +171,6 @@ def processRangeDaysParameter(rangesTextParameter):
 def aoristicClock(store,
                   nameFieldHour,
                   nameFieldDay,
-                  patternHour,
-                  patternDay,
                   rangeHoursParameter,
                   rangeDaysParameter,
                   expression,
@@ -189,14 +193,11 @@ def aoristicClock(store,
     rangeHours = processRangeHoursParameter(rangeHoursParameter)
   except:
     rangeHours = processRangeHoursParameter("0-23")
-    print "*****+ error h"
 
   try:
     rangeDays = processRangeDaysParameter(rangeDaysParameter)
   except:
     rangeDays = processRangeDaysParameter("0-6")
-    print "****** error d"
-    return
 
   days = len(rangeDays)
   hours = len(rangeHours)
@@ -361,15 +362,13 @@ def aoristicClock(store,
   ###
   if store.getSelection().getSize()!=0:
     fset = store.getSelection()
-  elif expression != '':
-    expressionEvaluatorManager = ExpressionEvaluatorLocator.getManager()
-    try:
-      evaluator = expressionEvaluatorManager.createEvaluator(expression)
-      fq = store.createFeatureQuery()
-      fq.addFilter(evaluator)
-      fset = store.getFeatureSet(fq)
-    except:
-      fset = store.getFeatureSet()
+  elif expression.getPhrase() != '':
+    evaluator = DALLocator.getDataManager().createExpresion(expression)
+    #evaluator = expressionEvaluatorManager.createEvaluator(expression)
+    fq = store.createFeatureQuery()
+    fq.addFilter(evaluator)
+    fq.retrievesAllAttributes()
+    fset = store.getFeatureSet(fq)
   else:
     fset = store.getFeatureSet()
  
@@ -388,8 +387,8 @@ def aoristicClock(store,
   ### FILL DICT
   ###
   for f in fset:
-    dateFieldHour = getFieldAsDate(f.get(nameFieldHour), patternHour)
-    dateFieldDay = getFieldAsDate(f.get(nameFieldDay), patternDay)
+    dateFieldHour = f.get(nameFieldHour) #getFieldAsDate(f.get(nameFieldHour), patternHour)
+    dateFieldDay = f.get(nameFieldDay) #getFieldAsDate(f.get(nameFieldDay), patternDay)
     
     if isinstance(dateFieldDay, Date) and isinstance(dateFieldHour, Date):
       cal = Calendar.getInstance()
@@ -460,6 +459,7 @@ def main1(*args):
   print processRangeDaysParameter("0,2,3,6,9")
 
 
+
 def getFieldAsDate(field, pattern):
     if isinstance(field, unicode):
       formatter = SimpleDateFormat(pattern)
@@ -468,6 +468,7 @@ def getFieldAsDate(field, pattern):
     elif isinstance(field, Date):
       return field
     else:
+      print type(field)
       return None
 
   
