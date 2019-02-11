@@ -25,44 +25,41 @@
 
 -->
 	<help>
-		<element name="DESCRIPTION" text="Geoproceso para la creacion de una grafica en el que aparecera representada la distribucion temporal de los eventos de la capa de entrada en forma de franjas de dias y horas. Cuando el intervalo de horas no es continuado se mostrará un pequeño espacio entre sectores para marcar la separación horaria. Es posible establecer tanto rangos de días y horas." description="Descripcion" type="0">
+		<element name="DESCRIPTION" text="Geoprocess for the creation of a graph in which the temporal distribution of the events of the input layer in the form of strips of days and hours will be represented. When the interval of hours is not continuous, a small space will be shown between sectors to mark the time separation. It is possible to set both ranges of days and hours." description="Description" type="0">
 		</element>
-                <image description="Parametros de la siguiente imagen" file="aoristicclockparameters_all_en.png">
+                <image description="Example of parameters with all values" file="aoristicclockparameters_all_en.png">
 		</image>
-                <image description="Reloj aoristico con todos los dias  (0-6) a todas horas (0-23)" file="aoristicclock_all_en.png">
+                <image description="Aoristic clock with all days (0-6) and all hours (0-23)" file="aoristicclock_all_en.png">
 		</image>
-                <image description="Parametros de la siguiente imagen" file="aoristicclockparameters_2_en.png">
+                <image description="Example with limited range of hours and days" file="aoristicclockparameters_2_en.png">
 		</image>
-                <image description="Reloj aoristico con los dias (2-4,6) en las horas (8-14,19-22)" file="aoristicclock_2_en.png">
+                <image description="Aoristic clock with specific days (2-4,6) and range of values (8-14,19-22)" file="aoristicclock_2_en.png">
 		</image>
-		<element name="ADDITIONAL_INFO" text="" description="Informacion adicional" type="0">
+		<element name="ADDITIONAL_INFO" text="" description="Additional info" type="0">
 		</element>
-		<element name="EXTENSION_AUTHOR" text="Oscar Martinez" description="Algoritmo creado por" type="0">
+		<element name="EXTENSION_AUTHOR" text="Oscar Martinez" description="Algorithm created for" type="0">
 		</element>
-		<element name="HELP_AUTHOR" text="Oscar Martinez" description="Ayuda creada por" type="0">
+		<element name="HELP_AUTHOR" text="Oscar Martinez" description="Help created for" type="0">
 		</element>
-		<element name="USER_NOTES" text="" description="Notas de usuario" type="0">
+		<element name="USER_NOTES" text="" description="User notes" type="0">
 		</element>
-		<element name="LAYER" text="Capa de entrada" description="" type="3">
+		<element name="LAYER" text="Input layer" description="" type="3">
 		</element>
-		<element name="PROPORTION" text="Proporcion del tamaño de la grafica" description="" type="3">
+		<element name="PROPORTION" text="Graphic proportion" description="" type="3">
 		</element>
-		<element name="FIELDHOUR" text="Campo hora" description="" type="3">
+		<element name="FIELDHOUR" text="Hour field" description="" type="3">
 		</element>
-		<element name="PATTERNHOUR" text="Patron del campo hora, solo en caso de que sea de tipo texto." description="" type="3">
+		<element name="FIELDDAY" text="Day field" description="" type="3">
 		</element>
-		<element name="FIELDDAY" text="Campo dia" description="" type="3">
+		<element name="RANGEHOURS" text="Hours range to show. It can be selected all (empty text box or 0-23), some ranges (9-12,15-21), o some specific hours (9-15,16,19,21)" description="" type="3">
 		</element>
-		<element name="PATTERNDAY" text="Patron del campo dia, solo en caso de que sea de tipo texto" description="" type="3">
+		<element name="RANGEDAYS" text="Days range to show. Select 0 for monday and 6 for sunday. It can be selected all (left empty or 0-6), select ranges (0-3), or specific days (0-2,4,6)" description="" type="3">
 		</element>
-		<element name="RANGEHOURS" text="Rango de horas a mostrar. Se pueden elegir todas (dejando en blanco o 0-23), establecer rangos (9-12,15-21), o horas por separado (9-15,16,19,21)" description="" type="3">
+		<element name="FILTEREXPRESSION" text="Expression to filter de input layer" description="" type="3">
 		</element>
-		<element name="RANGEDAYS" text="Rango de dias a mostrar. Siendo 0 Lunes y 6 Domingo. Se pueden elegir todas (dejando en blanco o 0-6), establecer rangos (0-3), o dias por separado (0-2,4,6)" description="" type="3">
-		</element>
-		<element name="FILTEREXPRESSION" text="Expresion de filtrado de la capa de entrada" description="" type="3"></element>
-                <element name="INITIAL_X" text="Coordenada X del punto central de inicio para la creacion del grafico" description="" type="3">
-                    </element>
-                <element name="INITIAL_Y" text="Coordenada Y del punto central de inicio para la creacion del grafico" description="" type="3">
-                    </element>
+    <element name="INITIAL_X" text="X center coordinate for the creation of the graph" description="" type="3">
+    </element>
+    <element name="INITIAL_Y" text="Y center coordinate for the creacion of th graph" description="" type="3">
+    </element>
 	</help>
 <?xml version='1.0' encoding='ISO-8859-1' standalone='yes' ?>
