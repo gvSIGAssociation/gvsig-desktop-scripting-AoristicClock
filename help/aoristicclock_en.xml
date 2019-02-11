@@ -27,13 +27,13 @@
 	<help>
 		<element name="DESCRIPTION" text="Geoproceso para la creacion de una grafica en el que aparecera representada la distribucion temporal de los eventos de la capa de entrada en forma de franjas de dias y horas. Cuando el intervalo de horas no es continuado se mostrará un pequeño espacio entre sectores para marcar la separación horaria. Es posible establecer tanto rangos de días y horas." description="Descripcion" type="0">
 		</element>
-                <image description="Parametros de la siguiente imagen" file="aoristicclockparameters_all.png">
+                <image description="Parametros de la siguiente imagen" file="aoristicclockparameters_all_en.png">
 		</image>
-                <image description="Reloj aoristico con todos los dias  (0-6) a todas horas (0-23)" file="aoristicclock_all.png">
+                <image description="Reloj aoristico con todos los dias  (0-6) a todas horas (0-23)" file="aoristicclock_all_en.png">
 		</image>
-                <image description="Parametros de la siguiente imagen" file="aoristicclockparameters_2.png">
+                <image description="Parametros de la siguiente imagen" file="aoristicclockparameters_2_en.png">
 		</image>
-                <image description="Reloj aoristico con los dias (2-4,6) en las horas (8-14,19-22)" file="aoristicclock_2.png">
+                <image description="Reloj aoristico con los dias (2-4,6) en las horas (8-14,19-22)" file="aoristicclock_2_en.png">
 		</image>
 		<element name="ADDITIONAL_INFO" text="" description="Informacion adicional" type="0">
 		</element>
