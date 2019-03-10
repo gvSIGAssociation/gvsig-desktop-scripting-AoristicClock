@@ -5,22 +5,21 @@ use_plugin("org.gvsig.geoprocess.app.mainplugin")
 
 import gvsig
 import pdb
+import os
 from gvsig import geom
 from gvsig import commonsdialog
 from gvsig.libs.toolbox import ToolboxProcess, NUMERICAL_VALUE_DOUBLE,SHAPE_TYPE_POLYGON,NUMERICAL_VALUE_INTEGER,SHAPE_TYPE_POLYGON, SHAPE_TYPE_POINT, SHAPE_TYPE_MIXED
+
+from addons.AoristicClock.aoristicClock import aoristicClock
+
 from es.unex.sextante.gui import core
 from es.unex.sextante.gui.core import NameAndIcon
 from es.unex.sextante.additionalInfo import AdditionalInfoVectorLayer
 from es.unex.sextante.gui.core import SextanteGUI
 from org.gvsig.geoprocess.lib.api import GeoProcessLocator
-
-
-
-from addons.AoristicClock.aoristicClock import aoristicClock
-
 from org.gvsig.tools import ToolsLocator
 from org.gvsig.andami import PluginsLocator
-import os
+
 from java.io import File
 
 class AoristicClockGeoprocess(ToolboxProcess):
