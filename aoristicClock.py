@@ -323,7 +323,7 @@ def aoristicClock(store,
         newFeaturePoint = pointStore.createNewFeature()
         newFeaturePoint.set("LABEL", day)
         #newFeaturePoint.set("VALUE", feature.get(fields[iring]))
-        newFeaturePoint.set("STRVALUE", str(dayNames[day]))
+        newFeaturePoint.set("STRVALUE", dayNames[day])
         newFeaturePoint.set("ROTATION", rotation)
         newFeaturePoint.set("HOUR", i)
         newFeaturePoint.set("DAY", day)
